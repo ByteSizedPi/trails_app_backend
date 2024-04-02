@@ -1,3 +1,5 @@
 # Ignore environment-specific files
 .env
 .env.*
+_pycache_
+_pycache_/
