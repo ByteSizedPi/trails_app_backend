@@ -5,15 +5,20 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from db import QUERIES
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 CORS(app)
 
 
 # GET REQUESTS
+# Load environment variables from .env file
+load_dotenv()
+
 @app.route("/api/validate/<pw>", methods=["GET"])
 def validate_password(pw):
     password = os.getenv("PASSWORD")
+    print(pw, password)
     return jsonify(pw == password)
 
 
@@ -81,6 +86,7 @@ def delete_event(event_id):
     return jsonify(QUERIES["DELETE_EVENT"](event_id))
 
 
+# TODO: revert all changes if anything fails
 @app.route("/api/event", methods=["POST"])
 def create_event():
     # Get the parameters

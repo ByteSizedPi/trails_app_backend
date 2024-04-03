@@ -4,7 +4,7 @@ import mysql.connector.pooling
 db_config = {
     "host": "localhost",
     "user": "root",
-    "password": "31656072",
+    "password": "root_password",
     "database": "trails_db",
 }
 
@@ -54,8 +54,8 @@ QUERIES = {
     "ALL_EVENTS": lambda: execute_query(
         """
             SELECT e.*, COUNT(s.section_number) AS section_count
-            FROM events e
-            JOIN sections s on e.id = s.event_id
+            FROM Events e
+            JOIN Sections s on e.id = s.event_id
             GROUP BY e.id, e.date_created, e.name, e.event_date, e.location, e.lap_count, e.completed
             ORDER BY e.event_date ASC;
         """
@@ -63,8 +63,8 @@ QUERIES = {
     "UPCOMING_EVENTS": lambda: execute_query(
         """
             SELECT e.*, COUNT(s.section_number) AS section_count
-            FROM events e
-            JOIN sections s on e.id = s.event_id
+            FROM Events e
+            JOIN Sections s on e.id = s.event_id
             WHERE completed = 0
             GROUP BY e.id, e.date_created, e.name, e.event_date, e.location, e.lap_count, e.completed
             ORDER BY e.event_date ASC;
@@ -73,8 +73,8 @@ QUERIES = {
     "COMPLETED_EVENTS": lambda: execute_query(
         """
             SELECT e.*, COUNT(s.section_number) AS section_count
-            FROM events e
-            JOIN sections s on e.id = s.event_id
+            FROM Events e
+            JOIN Sections s on e.id = s.event_id
             WHERE completed = 1
             GROUP BY e.id, e.date_created, e.name, e.event_date, e.location, e.lap_count, e.completed
             ORDER BY e.event_date ASC;
@@ -82,7 +82,7 @@ QUERIES = {
     ),
     "COMPLETE_EVENT": lambda event_id: insert_query(
         """
-            UPDATE events
+            UPDATE Events
             SET completed = 1
             WHERE id = %s;
         """,
@@ -90,7 +90,7 @@ QUERIES = {
     ),
     "DELETE_EVENT": lambda event_id: insert_query(
         """
-            DELETE FROM events
+            DELETE FROM Events
             WHERE id = %s;
         """,
         (event_id,),
@@ -98,7 +98,7 @@ QUERIES = {
     "EVENT": lambda event_id: execute_query(
         """
             SELECT id, name, event_date, location, lap_count
-            FROM events
+            FROM Events
             WHERE id = %s;
         """,
         (event_id,),
@@ -107,7 +107,7 @@ QUERIES = {
     "ALL_SECTIONS": lambda event_id: execute_query(
         """
             SELECT section_number
-            FROM sections
+            FROM Sections
             WHERE event_id = %s;
         """,
         (event_id,),
@@ -116,8 +116,8 @@ QUERIES = {
     "ALL_RIDERS": lambda event_id: execute_query(
         """
             SELECT rider_number, rider_name, c.name AS class
-            FROM riders r
-            JOIN classes c ON r.class_id = c.id
+            FROM Riders r
+            JOIN Classes c ON r.class_id = c.id
             WHERE event_id = %s;
         """,
         (event_id,),
@@ -125,7 +125,7 @@ QUERIES = {
     "GET_SCORES": lambda event_id, section_number, rider_number: execute_query(
         """
             SELECT lap_number, score
-            FROM scores
+            FROM Scores
             WHERE event_id = %s AND section_number = %s AND rider_number = %s;
         """,
         (
@@ -136,7 +136,7 @@ QUERIES = {
     ),
     "POST_SCORE": lambda event_id, section_number, rider_number, lap_number, score: insert_query(
         """
-            INSERT INTO scores (event_id, section_number, rider_number, lap_number, score)
+            INSERT INTO Scores (event_id, section_number, rider_number, lap_number, score)
             VALUES (%s, %s, %s, %s, %s);
         """,
         (
@@ -149,7 +149,7 @@ QUERIES = {
     ),
     "CREATE_EVENT": lambda event_name, event_location, event_date, laps: insert_query(
         """
-            INSERT INTO events (name, location, event_date, lap_count)
+            INSERT INTO Events (name, location, event_date, lap_count)
             VALUES (%s, %s, %s, %s);
         """,
         (
@@ -161,7 +161,7 @@ QUERIES = {
     ),
     "CREATE_SECTION": lambda event_id, section_number: insert_query(
         """
-            INSERT INTO sections (event_id, section_number)
+            INSERT INTO Sections (event_id, section_number)
             VALUES (%s, %s);
         """,
         (
@@ -171,7 +171,7 @@ QUERIES = {
     ),
     "CREATE_RIDERS": lambda query: insert_query(
         f"""
-            INSERT INTO riders (event_id, rider_number, rider_name, class_id)
+            INSERT INTO Riders (event_id, rider_number, rider_name, class_id)
             VALUES {query};
         """,
     ),
