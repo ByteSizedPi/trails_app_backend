@@ -1,7 +1,7 @@
 import os
 
 import pandas as pd
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
 
 from db import QUERIES
@@ -18,7 +18,6 @@ load_dotenv()
 @app.route("/api/validate/<pw>", methods=["GET"])
 def validate_password(pw):
     password = os.getenv("PASSWORD")
-    print(pw, password)
     return jsonify(pw == password)
 
 
@@ -59,6 +58,21 @@ def get_scores(event_id):
     rider_number = request.args.get("rider_number")
 
     return jsonify(QUERIES["GET_SCORES"](event_id, section_number, rider_number))
+
+
+@app.route("/api/template", methods=["GET"])
+def get_template():
+    try:
+        path = "C:/Users/drjjv/OneDrive/Desktop/Coding/Trails_App/trails_app_backend/src/assets/Riding Numbers Template.xlsx"
+        excel_mime_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        return send_file(path, mimetype=excel_mime_type, as_attachment=True)
+    except Exception as e:
+        return jsonify({"message": "File could not be served"})
+
+
+@app.route("/api/results_summary/<int:event_id>", methods=["GET"])
+def get_results_summary(event_id):
+    return jsonify(QUERIES["GET_SCORES_SUMMARY_BY_EVENTID"](event_id))
 
 
 # POST REQUESTS
@@ -116,23 +130,16 @@ def create_event():
             or "CLASS" not in df.columns
         ):
             return jsonify({"error": "Invalid file format"}), 400
-        # Create new event
-        event_id = QUERIES["CREATE_EVENT"](
-            event_name, event_location, event_date, lap_count
-        )
-
-        # add sections
-        for i in range(1, sections + 1):
-            QUERIES["CREATE_SECTION"](event_id, i)
+        
+        
 
         # helper function to get class id
+        switcher = {"M": 1, "E": 2, "I": 3, "C": 4}
+        
         def getClass(kls):
-            switcher = {"M": 1, "E": 2, "I": 3, "C": 4}
-            return switcher.get(kls, "Unknown")
+            return switcher.get(kls.upper(), "C")
 
-        # Create a dictionary to keep track of processed numbers
-        processed_numbers = {}
-
+    
         number = df["NUMBER"]
         name = df["NAME"]
         klass = df["CLASS"]
@@ -140,27 +147,42 @@ def create_event():
         # columns must be the same length
         if len(number) != len(name) or len(name) != len(klass):
             return jsonify({"error": "Invalid file format"}), 400
-
-        insert_query = ""
+        
+    
+        # Create a dictionary to keep track of processed numbers
+        processed_numbers = {}
 
         for Number, Name, Class in zip(number, name, klass):
             if pd.isnull(Number) or pd.isnull(Name) or pd.isnull(Class):
                 continue
+            
             if Number in processed_numbers:
                 return (
                     jsonify(
-                        {"error": f"Duplicate number {Number} for {Name}, {Class}"}
+                        {"error": f"Duplicate number {int(Number)} for {Name}, {Class}"}
                     ),
                     400,
                 )
-
             processed_numbers[Number] = True
-            class_name = getClass(Class)
-            insert_query += f"({event_id}, {int(Number)}, '{Name}', {class_name}),"
-        insert_query = insert_query[:-1]
+                
+        # Create new event
+        event_id = QUERIES["CREATE_EVENT"](
+            event_name, event_location, event_date, lap_count
+        )
+
+        # # add sections
+        [QUERIES["CREATE_SECTION"](event_id, i) for i in range(1, sections + 1)]
+        
+        insert_query = ""
+        
+        for Number, Name, Class in zip(number, name, klass):
+            if pd.isnull(Number) or pd.isnull(Name) or pd.isnull(Class):
+                continue
+
+            insert_query += f"({event_id}, {int(Number)}, '{Name}', {getClass(Class)}),"
 
         # Insert riders
-        QUERIES["CREATE_RIDERS"](insert_query)
+        QUERIES["CREATE_RIDERS"](insert_query[:-1])
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

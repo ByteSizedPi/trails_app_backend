@@ -4,7 +4,7 @@ import mysql.connector.pooling
 db_config = {
     "host": "localhost",
     "user": "root",
-    "password": "root_password",
+    "password": "31656072",
     "database": "trails_db",
 }
 
@@ -175,4 +175,26 @@ QUERIES = {
             VALUES {query};
         """,
     ),
+    
+    "GET_SCORES_SUMMARY_BY_EVENTID": lambda event_id: execute_query(
+        """
+            SELECT s.rider_number, rider_name, classes.name as class_name, SUM(score) as total_score
+            FROM trails_db.events e
+            JOIN sections sec ON e.id = sec.event_id
+            JOIN scores s ON e.id = s.event_id AND s.section_number = sec.section_number
+            JOIN riders ON e.id = riders.event_id AND s.rider_number = riders.rider_number
+            JOIN classes ON riders.class_id = classes.id
+            WHERE e.id = %s
+            GROUP BY rider_number, rider_name, class_name
+            ORDER BY
+            CASE class_name
+                WHEN 'M' THEN 1
+                WHEN 'E' THEN 2
+                WHEN 'I' THEN 3
+                WHEN 'C' THEN 4
+            END,
+            total_score ASC;
+        """,
+        (event_id,),
+    )
 }
