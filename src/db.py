@@ -4,8 +4,8 @@ import mysql.connector.pooling
 db_config = {
     "host": "localhost",
     "user": "root",
-    "password": "31656072",
-    "database": "trails_db",
+    "password": "root_password",
+    "database": "trials_db",
 }
 
 # Create a MySQL connection pool
@@ -145,6 +145,20 @@ QUERIES = {
             rider_number,
             lap_number,
             score,
+        ),
+    ),
+    "UPDATE_SCORE": lambda event_id, section_number, rider_number, lap_number, score: insert_query(
+        """
+            UPDATE Scores
+            SET score = %s
+            WHERE event_id = %s AND section_number = %s AND rider_number = %s AND lap_number = %s;
+        """,
+        (
+            score,
+            event_id,
+            section_number,
+            rider_number,
+            lap_number,
         ),
     ),
     "CREATE_EVENT": lambda event_name, event_location, event_date, laps: insert_query(

@@ -89,6 +89,19 @@ def post_score():
 
     return jsonify({"message": "Score added successfully"})
 
+@app.route("/api/score", methods=["PUT"])
+def put_score():
+    data = request.get_json()
+    event_id = data["event_id"]
+    section_number = data["section_number"]
+    rider_number = data["rider_number"]
+    lap_number = data["lap_number"]
+    score = data["score"]
+
+    QUERIES["UPDATE_SCORE"](event_id, section_number, rider_number, lap_number, score)
+
+    return jsonify({"message": "Score updated successfully"})
+
 
 @app.route("/api/event/<int:event_id>", methods=["PUT"])
 def complete_event(event_id):
