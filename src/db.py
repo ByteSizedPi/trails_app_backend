@@ -192,12 +192,12 @@ QUERIES = {
     
     "GET_SCORES_SUMMARY_BY_EVENTID": lambda event_id: execute_query(
         """
-            SELECT s.rider_number, rider_name, classes.name as class_name, SUM(score) as total_score
-            FROM trails_db.events e
-            JOIN sections sec ON e.id = sec.event_id
-            JOIN scores s ON e.id = s.event_id AND s.section_number = sec.section_number
-            JOIN riders ON e.id = riders.event_id AND s.rider_number = riders.rider_number
-            JOIN classes ON riders.class_id = classes.id
+            SELECT s.rider_number, rider_name, c.name as class_name, SUM(score) as total_score
+            FROM trials_db.Events e
+            JOIN Sections sec ON e.id = sec.event_id
+            JOIN Scores s ON e.id = s.event_id AND s.section_number = sec.section_number
+            JOIN Riders r ON e.id = r.event_id AND s.rider_number = r.rider_number
+            JOIN Classes c ON r.class_id = c.id
             WHERE e.id = %s
             GROUP BY rider_number, rider_name, class_name
             ORDER BY
