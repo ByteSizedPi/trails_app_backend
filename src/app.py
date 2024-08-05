@@ -6,6 +6,8 @@ from flask_cors import CORS
 
 from db import QUERIES
 from dotenv import load_dotenv
+import pandas as pd
+from flask import make_response
 
 app = Flask(__name__)
 CORS(app)
@@ -75,6 +77,25 @@ def get_results_summary(event_id):
     return jsonify(QUERIES["GET_SCORES_SUMMARY_BY_EVENTID"](event_id))
 
 
+
+@app.route("/api/results_summary/<int:event_id>/excel", methods=["GET"])
+def get_results_summary_excel(event_id):
+    column_names, rows = QUERIES["GET_SCORES_SUMMARY_BY_EVENTID_EXCEL"](event_id)
+
+    # Create a DataFrame from the data
+    df = pd.DataFrame(rows, columns=column_names)
+
+    # Convert DataFrame to CSV
+    csv_data = df.to_csv(index=False)
+
+    # Create a response with the CSV data
+    response = make_response(csv_data)
+    response.headers["Content-Disposition"] = "attachment; filename=results_summary.csv"
+    response.headers["Content-Type"] = "text/csv"
+
+    return response
+
+
 # POST REQUESTS
 @app.route("/api/score", methods=["POST"])
 def post_score():
@@ -122,6 +143,7 @@ def create_event():
     event_date = request.form.get("event_date")
     sections = request.form.get("sections")
     lap_count = request.form.get("lap_count")
+    password = request.form.get("password")
 
     # Validate the parameters
     try:
@@ -180,7 +202,7 @@ def create_event():
                 
         # Create new event
         event_id = QUERIES["CREATE_EVENT"](
-            event_name, event_location, event_date, lap_count
+            event_name, event_location, event_date, lap_count, password
         )
 
         # # add sections
@@ -201,6 +223,15 @@ def create_event():
 
     return jsonify({"message": "Event created successfully"})
 
+
+
+@app.route("/api/event/<int:event_id>/validate/<password>", methods=["GET"])
+def verify_event_password(event_id, password):
+    return jsonify(True if QUERIES["VERIFY_EVENT_PASSWORD"](event_id, password) else False)
+
+@app.route("/api/event/<int:event_id>/has_password", methods=["GET"])
+def get_event_password(event_id):
+    return jsonify(True if QUERIES["EVENT_HAS_PASSWORD"](event_id)[0]["password"] else False)
 
 if __name__ == "__main__":
     app.run(debug=True)

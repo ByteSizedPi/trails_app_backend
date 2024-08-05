@@ -25,13 +25,16 @@ def close_connection(connection):
 
 
 # Function to execute a query
-def execute_query(query, params=None):
+def execute_query(query, params=None, jsonformat=True):
     connection = get_connection()
     cursor = connection.cursor()
     cursor.execute(query, params)
     column_names = [column[0] for column in cursor.description]
     rows = cursor.fetchall()
-    result = [dict(zip(column_names, row)) for row in rows]
+    if jsonformat:
+        result = [dict(zip(column_names, row)) for row in rows]
+    else:
+        result = column_names, rows
     cursor.close()
     close_connection(connection)
     return result
@@ -161,16 +164,17 @@ QUERIES = {
             lap_number,
         ),
     ),
-    "CREATE_EVENT": lambda event_name, event_location, event_date, laps: insert_query(
+    "CREATE_EVENT": lambda event_name, event_location, event_date, laps, password: insert_query(
         """
-            INSERT INTO Events (name, location, event_date, lap_count)
-            VALUES (%s, %s, %s, %s);
+            INSERT INTO Events (name, location, event_date, lap_count, password)
+            VALUES (%s, %s, %s, %s, %s);
         """,
         (
             event_name,
             event_location,
             event_date,
             laps,
+            password,
         ),
     ),
     "CREATE_SECTION": lambda event_id, section_number: insert_query(
@@ -210,5 +214,43 @@ QUERIES = {
             total_score ASC;
         """,
         (event_id,),
-    )
+    ),
+    "GET_SCORES_SUMMARY_BY_EVENTID_EXCEL": lambda event_id: execute_query(
+        """
+            SELECT s.rider_number, rider_name, c.name as class_name, SUM(score) as total_score
+            FROM trials_db.Events e
+            JOIN Sections sec ON e.id = sec.event_id
+            JOIN Scores s ON e.id = s.event_id AND s.section_number = sec.section_number
+            JOIN Riders r ON e.id = r.event_id AND s.rider_number = r.rider_number
+            JOIN Classes c ON r.class_id = c.id
+            WHERE e.id = %s
+            GROUP BY rider_number, rider_name, class_name
+            ORDER BY
+            CASE class_name
+                WHEN 'M' THEN 1
+                WHEN 'E' THEN 2
+                WHEN 'I' THEN 3
+                WHEN 'C' THEN 4
+            END,
+            total_score ASC;
+        """,
+        (event_id,),
+        False
+    ),
+    "EVENT_HAS_PASSWORD": lambda event_id: execute_query(
+        """
+            SELECT password
+            FROM Events
+            WHERE id = %s;
+        """,
+        (event_id,),
+    ),
+    "VERIFY_EVENT_PASSWORD": lambda event_id, password: execute_query(
+        """
+            SELECT id
+            FROM Events
+            WHERE id = %s AND password = %s;
+        """,
+        (event_id, password),
+    ),
 }
