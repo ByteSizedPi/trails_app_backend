@@ -4,11 +4,11 @@ import pandas as pd
 from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
 
+from dotenv import load_dotenv
 load_dotenv(os.path.join(os.getcwd(), '.env'))
 print(os.getcwd())
 
 from db import QUERIES
-from dotenv import load_dotenv
 import pandas as pd
 from flask import make_response
 
