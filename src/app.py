@@ -15,7 +15,9 @@ CORS(app)
 
 # GET REQUESTS
 # Load environment variables from .env file
-load_dotenv()
+load_dotenv(os.path.join(os.getcwd(), '.env'))
+print(os.getcwd())
+
 
 @app.route("/api/validate/<pw>", methods=["GET"])
 def validate_password(pw):

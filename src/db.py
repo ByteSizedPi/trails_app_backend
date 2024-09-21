@@ -1,6 +1,6 @@
 import os
 
-import mysql.connector.pooling
+import mysql.connector.pooling as pooling
 
 # Configure MySQL connection pool
 db_config = {
@@ -11,7 +11,7 @@ db_config = {
 }
 
 # Create a MySQL connection pool
-connection_pool = mysql.connector.pooling.MySQLConnectionPool(
+connection_pool = pooling.MySQLConnectionPool(
     pool_size=5, **db_config
 )
 
