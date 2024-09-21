@@ -3,6 +3,6 @@ Flask-Cors
 mysql-connector-python
 openpyxl
 pandas
-PyMySQL==1.1.1
-python-dotenv==1.0.1
-Werkzeug==3.0.3
+PyMySQL
+python-dotenv
+Werkzeug
