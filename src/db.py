@@ -1,16 +1,18 @@
+import os
+
 import mysql.connector.pooling
 
 # Configure MySQL connection pool
 db_config = {
-    "host": "localhost",
-    "user": "root",
-    "password": "root_password",
-    "database": "trials_db",
+    "host": os.getenv("DB_HOST"),
+    "user": os.getenv("DB_USER"),
+    "password": os.getenv("DB_PASSWORD"),
+    "database": os.getenv("DB_NAME"),
 }
 
 # Create a MySQL connection pool
 connection_pool = mysql.connector.pooling.MySQLConnectionPool(
-    pool_name="my_pool", pool_size=5, **db_config
+    pool_size=5, **db_config
 )
 
 
@@ -121,7 +123,8 @@ QUERIES = {
             SELECT rider_number, rider_name, c.name AS class
             FROM Riders r
             JOIN Classes c ON r.class_id = c.id
-            WHERE event_id = %s;
+            WHERE event_id = %s
+            ORDER BY rider_number ASC;
         """,
         (event_id,),
     ),

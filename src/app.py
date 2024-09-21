@@ -19,7 +19,7 @@ load_dotenv()
 
 @app.route("/api/validate/<pw>", methods=["GET"])
 def validate_password(pw):
-    password = os.getenv("PASSWORD")
+    password = os.getenv("APP_ROOT_PASSWORD")
     return jsonify(pw == password)
 
 
@@ -65,10 +65,11 @@ def get_scores(event_id):
 @app.route("/api/template", methods=["GET"])
 def get_template():
     try:
-        path = "C:/Users/drjjv/OneDrive/Desktop/Coding/Trails_App/trails_app_backend/src/assets/Riding Numbers Template.xlsx"
+        path = os.path.join(app.static_folder, "riding_numbers_template.xlsx")
         excel_mime_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         return send_file(path, mimetype=excel_mime_type, as_attachment=True)
     except Exception as e:
+        print(e)
         return jsonify({"message": "File could not be served"})
 
 
@@ -159,12 +160,12 @@ def create_event():
         df = pd.read_excel(file, skiprows=2)
 
         # Check if variables are defined
-        if (
-            "NUMBER" not in df.columns
-            or "NAME" not in df.columns
-            or "CLASS" not in df.columns
-        ):
-            return jsonify({"error": "Invalid file format"}), 400
+        required_columns = ["NUMBER", "NAME", "CLASS"]
+        missing_columns = [col for col in required_columns if col not in df.columns]
+
+        if missing_columns:
+            error_message = f"Missing columns: {', '.join(missing_columns)}"
+            return jsonify({"error": error_message}), 400
         
         
 
@@ -181,7 +182,7 @@ def create_event():
 
         # columns must be the same length
         if len(number) != len(name) or len(name) != len(klass):
-            return jsonify({"error": "Invalid file format"}), 400
+            return jsonify({"error": "Entries cannot have empty columns"}), 400
         
     
         # Create a dictionary to keep track of processed numbers
@@ -234,4 +235,4 @@ def get_event_password(event_id):
     return jsonify(True if QUERIES["EVENT_HAS_PASSWORD"](event_id)[0]["password"] else False)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
