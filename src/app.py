@@ -4,6 +4,9 @@ import pandas as pd
 from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
 
+load_dotenv(os.path.join(os.getcwd(), '.env'))
+print(os.getcwd())
+
 from db import QUERIES
 from dotenv import load_dotenv
 import pandas as pd
@@ -15,8 +18,6 @@ CORS(app)
 
 # GET REQUESTS
 # Load environment variables from .env file
-load_dotenv(os.path.join(os.getcwd(), '.env'))
-print(os.getcwd())
 
 
 @app.route("/api/validate/<pw>", methods=["GET"])
