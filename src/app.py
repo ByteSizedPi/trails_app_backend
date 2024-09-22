@@ -4,9 +4,9 @@ import pandas as pd
 from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
 
+# Load env
 from dotenv import load_dotenv
 load_dotenv(os.path.join(os.getcwd(), '.env'))
-print(os.getcwd())
 
 from db import QUERIES
 import pandas as pd
@@ -169,16 +169,16 @@ def create_event():
         if missing_columns:
             error_message = f"Missing columns: {', '.join(missing_columns)}"
             return jsonify({"error": error_message}), 400
-        
-        
+
+
 
         # helper function to get class id
         switcher = {"M": 1, "E": 2, "I": 3, "C": 4}
-        
+
         def getClass(kls):
             return switcher.get(kls.upper(), "C")
 
-    
+
         number = df["NUMBER"]
         name = df["NAME"]
         klass = df["CLASS"]
@@ -186,15 +186,15 @@ def create_event():
         # columns must be the same length
         if len(number) != len(name) or len(name) != len(klass):
             return jsonify({"error": "Entries cannot have empty columns"}), 400
-        
-    
+
+
         # Create a dictionary to keep track of processed numbers
         processed_numbers = {}
 
         for Number, Name, Class in zip(number, name, klass):
             if pd.isnull(Number) or pd.isnull(Name) or pd.isnull(Class):
                 continue
-            
+
             if Number in processed_numbers:
                 return (
                     jsonify(
@@ -203,7 +203,7 @@ def create_event():
                     400,
                 )
             processed_numbers[Number] = True
-                
+
         # Create new event
         event_id = QUERIES["CREATE_EVENT"](
             event_name, event_location, event_date, lap_count, password
@@ -211,9 +211,9 @@ def create_event():
 
         # # add sections
         [QUERIES["CREATE_SECTION"](event_id, i) for i in range(1, sections + 1)]
-        
+
         insert_query = ""
-        
+
         for Number, Name, Class in zip(number, name, klass):
             if pd.isnull(Number) or pd.isnull(Name) or pd.isnull(Class):
                 continue
@@ -238,4 +238,4 @@ def get_event_password(event_id):
     return jsonify(True if QUERIES["EVENT_HAS_PASSWORD"](event_id)[0]["password"] else False)
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug = not not os.getenv("DEBUG"))

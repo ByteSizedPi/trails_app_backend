@@ -15,6 +15,8 @@ connection_pool = pooling.MySQLConnectionPool(
     pool_size=5, **db_config
 )
 
+print("\nConnection pool created", "\n\thost: ", db_config["host"], "\n\tuser: ", db_config["user"], "\n\tdatabase: ", db_config["database"], "\n")
+
 
 # Function to get a connection from the pool
 def get_connection():
@@ -196,7 +198,7 @@ QUERIES = {
             VALUES {query};
         """,
     ),
-    
+
     "GET_SCORES_SUMMARY_BY_EVENTID": lambda event_id: execute_query(
         """
             SELECT s.rider_number, rider_name, c.name as class_name, SUM(score) as total_score
