@@ -4,7 +4,7 @@ from app import app
 import os
 
 if __name__ == "__main__":
-    env = ["DB_HOST", "DB_USER", "DB_PASSWORD", "DB_NAME", "APP_ROOT_PASSWORD", "DEBUG"]
+    env = ["DB_HOST", "DB_USER", "DB_PASSWORD", "DB_NAME", "APP_ROOT_PASSWORD", "DEBUG", "PORT"]
     
     with open("output.txt", "w") as file:
         for var in env:
