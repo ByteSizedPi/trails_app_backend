@@ -237,5 +237,3 @@ def verify_event_password(event_id, password):
 def get_event_password(event_id):
     return jsonify(True if QUERIES["EVENT_HAS_PASSWORD"](event_id)[0]["password"] else False)
 
-if __name__ == "__main__":
-    app.run(debug = not not os.getenv("DEBUG"))
