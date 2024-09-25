@@ -6,3 +6,4 @@ _pycache_/
 
 .venv/
 src/
+output.txt
