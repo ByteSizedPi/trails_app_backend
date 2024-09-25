@@ -237,3 +237,10 @@ def verify_event_password(event_id, password):
 def get_event_password(event_id):
     return jsonify(True if QUERIES["EVENT_HAS_PASSWORD"](event_id)[0]["password"] else False)
 
+env = ["DB_HOST", "DB_USER", "DB_PASSWORD", "DB_NAME", "APP_ROOT_PASSWORD", "DEBUG", "PORT"]
+
+with open("output.txt", "w") as file:
+    for var in env:
+        file.write(f"{var}: {os.getenv(var)}\n")
+
+app.run(debug=not not os.getenv("DEBUG"), port=os.getenv("PORT", 5000))
