@@ -20,44 +20,44 @@ CORS(app)
 # Load environment variables from .env file
 
 
-@app.route("/api/validate/<pw>", methods=["GET"])
+@app.route("/validate/<pw>", methods=["GET"])
 def validate_password(pw):
     password = os.getenv("APP_ROOT_PASSWORD")
     return jsonify(pw == password)
 
 
-@app.route("/api/events/all", methods=["GET"])
+@app.route("/events/all", methods=["GET"])
 def get_all_events():
     return jsonify(QUERIES["ALL_EVENTS"]())
 
 
-@app.route("/api/events/upcoming", methods=["GET"])
+@app.route("/events/upcoming", methods=["GET"])
 def get_upcoming_events():
     return jsonify(QUERIES["UPCOMING_EVENTS"]())
 
 
-@app.route("/api/events/completed", methods=["GET"])
+@app.route("/events/completed", methods=["GET"])
 def completed_events():
     return jsonify(QUERIES["COMPLETED_EVENTS"]())
 
 
-@app.route("/api/events/<int:event_id>", methods=["GET"])
+@app.route("/events/<int:event_id>", methods=["GET"])
 def get_events(event_id):
     return jsonify(QUERIES["EVENT"](event_id))
 
 
-@app.route("/api/events/<int:event_id>/sections/all/", methods=["GET"])
+@app.route("/events/<int:event_id>/sections/all/", methods=["GET"])
 def get_all_sections(event_id):
     sections = [n["section_number"] for n in QUERIES["ALL_SECTIONS"](event_id)]
     return jsonify({"sections": sections})
 
 
-@app.route("/api/events/<int:event_id>/riders/all/", methods=["GET"])
+@app.route("/events/<int:event_id>/riders/all/", methods=["GET"])
 def get_all_riders(event_id):
     return jsonify(QUERIES["ALL_RIDERS"](event_id))
 
 
-@app.route("/api/events/<int:event_id>/scores", methods=["GET"])
+@app.route("/events/<int:event_id>/scores", methods=["GET"])
 def get_scores(event_id):
     section_number = request.args.get("section_number")
     rider_number = request.args.get("rider_number")
@@ -65,7 +65,7 @@ def get_scores(event_id):
     return jsonify(QUERIES["GET_SCORES"](event_id, section_number, rider_number))
 
 
-@app.route("/api/template", methods=["GET"])
+@app.route("/template", methods=["GET"])
 def get_template():
     try:
         path = os.path.join(app.static_folder, "riding_numbers_template.xlsx")
@@ -76,13 +76,13 @@ def get_template():
         return jsonify({"message": "File could not be served"})
 
 
-@app.route("/api/results_summary/<int:event_id>", methods=["GET"])
+@app.route("/results_summary/<int:event_id>", methods=["GET"])
 def get_results_summary(event_id):
     return jsonify(QUERIES["GET_SCORES_SUMMARY_BY_EVENTID"](event_id))
 
 
 
-@app.route("/api/results_summary/<int:event_id>/excel", methods=["GET"])
+@app.route("/results_summary/<int:event_id>/excel", methods=["GET"])
 def get_results_summary_excel(event_id):
     column_names, rows = QUERIES["GET_SCORES_SUMMARY_BY_EVENTID_EXCEL"](event_id)
 
@@ -101,7 +101,7 @@ def get_results_summary_excel(event_id):
 
 
 # POST REQUESTS
-@app.route("/api/score", methods=["POST"])
+@app.route("/score", methods=["POST"])
 def post_score():
     data = request.get_json()
     event_id = data["event_id"]
@@ -114,7 +114,7 @@ def post_score():
 
     return jsonify({"message": "Score added successfully"})
 
-@app.route("/api/score", methods=["PUT"])
+@app.route("/score", methods=["PUT"])
 def put_score():
     data = request.get_json()
     event_id = data["event_id"]
@@ -128,18 +128,18 @@ def put_score():
     return jsonify({"message": "Score updated successfully"})
 
 
-@app.route("/api/event/<int:event_id>", methods=["PUT"])
+@app.route("/event/<int:event_id>", methods=["PUT"])
 def complete_event(event_id):
     return jsonify(QUERIES["COMPLETE_EVENT"](event_id))
 
 
-@app.route("/api/event/<int:event_id>", methods=["DELETE"])
+@app.route("/event/<int:event_id>", methods=["DELETE"])
 def delete_event(event_id):
     return jsonify(QUERIES["DELETE_EVENT"](event_id))
 
 
 # TODO: revert all changes if anything fails
-@app.route("/api/event", methods=["POST"])
+@app.route("/event", methods=["POST"])
 def create_event():
     # Get the parameters
     event_name = request.form.get("event_name")
@@ -229,11 +229,11 @@ def create_event():
 
 
 
-@app.route("/api/event/<int:event_id>/validate/<password>", methods=["GET"])
+@app.route("/event/<int:event_id>/validate/<password>", methods=["GET"])
 def verify_event_password(event_id, password):
     return jsonify(True if QUERIES["VERIFY_EVENT_PASSWORD"](event_id, password) else False)
 
-@app.route("/api/event/<int:event_id>/has_password", methods=["GET"])
+@app.route("/event/<int:event_id>/has_password", methods=["GET"])
 def get_event_password(event_id):
     return jsonify(True if QUERIES["EVENT_HAS_PASSWORD"](event_id)[0]["password"] else False)
 
