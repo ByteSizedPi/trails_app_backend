@@ -243,4 +243,4 @@ with open("output.txt", "w") as file:
     for var in env:
         file.write(f"{var}: {os.getenv(var)}\n")
 
-app.run(debug=not not os.getenv("DEBUG"), port=os.getenv("PORT", 5000))
+# app.run(debug=not not os.getenv("DEBUG"), port=os.getenv("PORT", 5000))
